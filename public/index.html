@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CYBER VELOCITY | Multiplayer Typing Car Race</title>
+  <meta name="description" content="High-octane neon synthwave multiplayer car racing game powered by typing speed!">
+  
+  <!-- Google Fonts: Orbitron, Rajdhani, Fira Code -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Ambient Audio & Sound Toggle -->
+  <button id="sound-toggle-btn" class="sound-btn" title="Toggle Sound (Mute/Unmute)">
+    <span id="sound-icon">🔊</span>
+    <span id="sound-text">AUDIO ON</span>
+  </button>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- Background Synthwave Horizon Canvas -->
+  <canvas id="bg-canvas"></canvas>
+
+  <div class="app-container">
+    
+    <!-- HEADER -->
+    <header class="game-header">
+      <div class="logo-wrap">
+        <div class="glitch-title" data-text="CYBER VELOCITY">CYBER VELOCITY</div>
+        <div class="subtitle">HYPERDRIVE MULTIPLAYER TYPING RACER</div>
+      </div>
+    </header>
+
+    <!-- VIEW 1: MAIN MENU -->
+    <main id="view-menu" class="view-panel active">
+      <div class="menu-card glass-panel">
+        
+        <!-- Player Customization -->
+        <div class="profile-section">
+          <label for="player-name-input" class="cyber-label">PILOT CALLSIGN</label>
+          <div class="input-glow-wrap">
+            <input type="text" id="player-name-input" maxlength="16" placeholder="Enter your pilot name..." value="ApexRacer">
+          </div>
+
+          <div class="color-picker-section">
+            <span class="cyber-label">VEHICLE NEON PAINT & UNDERGLOW</span>
+            <div id="color-palette" class="color-palette">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+
+          <!-- Car Live 2D Preview -->
+          <div class="car-preview-container">
+            <div class="preview-glow"></div>
+            <canvas id="car-preview-canvas" width="300" height="130"></canvas>
+            <div class="car-stats-preview">
+              <span id="car-color-name">Neon Cyan</span> • <span>CYBER INTERCEPTOR GT</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="menu-actions">
+          
+          <!-- Instant Solo vs Bots Test Button -->
+          <button id="btn-quick-race" class="btn-cyber btn-highlight">
+            <span class="btn-text">⚡ QUICK RACE (SOLO VS AI BOTS)</span>
+            <span class="btn-glow"></span>
+          </button>
+
+          <button id="btn-create-room" class="btn-cyber btn-primary">
+            <span class="btn-text">🏁 CREATE MULTIPLAYER RACE</span>
+            <span class="btn-glow"></span>
+          </button>
+
+          <div class="divider">
+            <span>OR ENTER RACE CODE</span>
+          </div>
+
+          <div class="join-room-box">
+            <input type="text" id="join-code-input" maxlength="5" placeholder="CODE (e.g. TURBO)" autocomplete="off">
+            <button id="btn-join-room" class="btn-cyber btn-secondary">
+              <span class="btn-text">JOIN RACE</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="how-to-play-hint">
+          <span>⚡ <strong>HOW TO PLAY:</strong> Type the random sentence at the bottom of the screen accurately. Your typing speed (WPM) powers the engine throttle. Chain streaks without typos to ignite <strong>TURBO NITRO</strong> and blow past your rivals!</span>
+        </div>
+      </div>
+    </main>
+
+    <!-- VIEW 2: LOBBY -->
+    <section id="view-lobby" class="view-panel">
+      <div class="lobby-card glass-panel">
+        
+        <div class="lobby-header">
+          <div class="room-code-badge">
+            <span class="code-label">RACE CODE</span>
+            <span id="lobby-room-code" class="code-value">------</span>
+            <button id="btn-copy-link" class="btn-icon" title="Copy Invite Link">
+              📋 <span>COPY INVITE LINK</span>
+            </button>
+          </div>
+
+          <div class="lobby-bot-actions host-only">
+            <button id="btn-add-bot" class="btn-icon btn-bot" title="Add an AI Competitor">
+              🤖 <span>+ ADD AI BOT</span>
+            </button>
+            <button id="btn-clear-bots" class="btn-icon btn-bot-clear" title="Remove AI Competitors">
+              ✖ <span>CLEAR BOTS</span>
+            </button>
+          </div>
+
+          <div class="lobby-status-pill">
+            <span id="lobby-player-count">1 / 6 Racers</span>
+          </div>
+        </div>
+
+        <h2 class="section-title">STARTING GRID (LINEUP)</h2>
+
+        <!-- Racers Grid -->
+        <div id="racers-grid" class="racers-grid">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Lobby Action Bar -->
+        <div class="lobby-actions">
+          <button id="btn-leave-lobby" class="btn-cyber btn-danger">
+            <span class="btn-text">LEAVE RACE</span>
+          </button>
+
+          <button id="btn-toggle-ready" class="btn-cyber btn-secondary">
+            <span id="ready-btn-text" class="btn-text">READY UP</span>
+          </button>
+
+          <button id="btn-start-race" class="btn-cyber btn-primary host-only disabled" disabled>
+            <span class="btn-text">START RACE</span>
+            <span class="btn-glow"></span>
+          </button>
+        </div>
+
+        <div id="lobby-wait-msg" class="lobby-hint">
+          All racers are ready! Host can start the countdown.
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: RACE SCREEN -->
+    <section id="view-race" class="view-panel">
+      
+      <!-- Top HUD Stats -->
+      <div class="race-hud-bar glass-panel">
+        <div class="hud-stat">
+          <span class="hud-label">POSITION</span>
+          <span id="hud-position" class="hud-val highlight">1st</span>
+        </div>
+
+        <div class="hud-stat">
+          <span class="hud-label">LIVE WPM</span>
+          <span id="hud-wpm" class="hud-val">0</span>
+        </div>
+
+        <div class="hud-stat">
+          <span class="hud-label">VELOCITY</span>
+          <span id="hud-speed" class="hud-val">0 <small>KM/H</small></span>
+        </div>
+
+        <div class="hud-stat">
+          <span class="hud-label">ACCURACY</span>
+          <span id="hud-accuracy" class="hud-val">100%</span>
+        </div>
+
+        <div class="hud-stat">
+          <span class="hud-label">GEAR</span>
+          <span id="hud-gear" class="hud-val gear-val">GEAR 1</span>
+        </div>
+
+        <div class="hud-stat">
+          <span class="hud-label">NITRO STREAK</span>
+          <span id="hud-streak" class="hud-val streak-val">x0</span>
+        </div>
+
+        <div class="hud-stat">
+          <span class="hud-label">TIME</span>
+          <span id="hud-time" class="hud-val">0.0s</span>
+        </div>
+      </div>
+
+      <!-- RACE TRACK CANVAS -->
+      <div class="track-wrapper">
+        <canvas id="race-canvas" width="1100" height="420"></canvas>
+        
+        <!-- Dynamic Floating Combo Flash -->
+        <div id="combo-popup" class="combo-popup hidden">HYPERDRIVE!</div>
+
+        <!-- COUNTDOWN OVERLAY -->
+        <div id="countdown-overlay" class="countdown-overlay hidden">
+          <div id="countdown-number" class="countdown-number">3</div>
+          <div id="countdown-sub" class="countdown-sub">REV ENGINES</div>
+        </div>
+      </div>
+
+      <!-- TYPING COCKPIT / DASHBOARD -->
+      <div class="cockpit-panel glass-panel">
+        
+        <!-- Speedometer Gauge & Nitro Bar -->
+        <div class="cockpit-gauges">
+          <div class="gauge-box">
+            <svg class="speedo-svg" viewBox="0 0 120 70">
+              <path class="speedo-bg-arc" d="M 15,65 A 45,45 0 0,1 105,65" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="8" stroke-linecap="round"/>
+              <path id="speedo-fill-arc" class="speedo-fill-arc" d="M 15,65 A 45,45 0 0,1 105,65" fill="none" stroke="#00f0ff" stroke-width="8" stroke-dasharray="141" stroke-dashoffset="141" stroke-linecap="round"/>
+            </svg>
+            <div class="speedo-center">
+              <span id="speedo-num">0</span>
+              <span class="speedo-unit">WPM</span>
+            </div>
+          </div>
+
+          <div class="nitro-box">
+            <div class="nitro-header">
+              <span>NITRO INJECTOR</span>
+              <span id="nitro-level-text">WARMUP</span>
+            </div>
+            <div class="nitro-bar-track">
+              <div id="nitro-bar-fill" class="nitro-bar-fill"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TEXT TO TYPE DISPLAY -->
+        <div class="typing-display-box" id="typing-display-box">
+          <div id="text-display" class="text-display">
+            <!-- Populated into span characters -->
+          </div>
+        </div>
+
+        <!-- HIDDEN TYPING INPUT WITH VISUAL FOCUS TRAP -->
+        <div class="typing-input-bar">
+          <input type="text" id="type-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Type the text above to accelerate your car..." autofocus>
+          <div id="input-status-indicator" class="input-status">READY</div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- VIEW 4: RESULTS / PODIUM -->
+    <div id="podium-modal" class="modal-overlay hidden">
+      <div class="podium-card glass-panel">
+        
+        <div class="podium-header">
+          <h2 class="podium-title">RACE RESULTS</h2>
+          <div id="user-finish-badge" class="finish-badge">VICTORY!</div>
+        </div>
+
+        <!-- 3D Podium Visual -->
+        <div id="podium-slots" class="podium-slots">
+          <!-- Dynamic 1st, 2nd, 3rd slots -->
+        </div>
+
+        <!-- Full Results Table -->
+        <div class="results-table-wrap">
+          <table class="results-table">
+            <thead>
+              <tr>
+                <th>RANK</th>
+                <th>PILOT</th>
+                <th>AVG WPM</th>
+                <th>TOP SPEED</th>
+                <th>ACCURACY</th>
+                <th>FINISH TIME</th>
+              </tr>
+            </thead>
+            <tbody id="results-tbody">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Podium Actions -->
+        <div class="podium-actions">
+          <button id="btn-podium-lobby" class="btn-cyber btn-secondary">
+            <span class="btn-text">BACK TO LOBBY</span>
+          </button>
+          
+          <button id="btn-podium-rematch" class="btn-cyber btn-primary host-only">
+            <span class="btn-text">REMATCH (PLAY AGAIN)</span>
+            <span class="btn-glow"></span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Client Scripts -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/carRenderer.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
